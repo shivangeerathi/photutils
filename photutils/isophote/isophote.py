@@ -236,28 +236,29 @@ class Isophote:
             model = first_and_second_harmonic_function(self.sample.values[0],
                                                        coeffs)
             residual = self.sample.values[2] - model
-            
+
             # upper (third and fourth) harmonics
-            up_coeffs, inv_hessian = fit_upper_harmonic(sample.values[0], \
+            up_coeffs, inv_hessian = fit_upper_harmonic(sample.values[0],
                                                 sample.values[2], n)
             a = up_coeffs[1] / self.sma / sample.gradient
             b = up_coeffs[2] / self.sma / sample.gradient
 
-            errfunc = lambda coeffs, phi, order, intensities: coeffs[0] + \
-                coeffs[1]*np.sin(order*phi) + coeffs[2]*np.cos(order*phi) - intensities
+            def errfunc(coeffs, phi, order, intensities):
+                return coeffs[0] + coeffs[1]*np.sin(order*phi) + 
+                            coeffs[2]*np.cos(order*phi) - intensities
 
-            cost = (errfunc(up_coeffs, self.sample.values[0], n, \
-                        self.sample.values[2])**2).sum()
+            cost = (errfunc(up_coeffs, self.sample.values[0], n,
+                                self.sample.values[2])**2).sum()
             s_sq = cost / (len(self.sample.values[2]) - len(up_coeffs))
-            covariance = inv_hessian * s_sq 
-            
+            covariance = inv_hessian * s_sq
+
             error = []
             for i in range(len(up_coeffs)):
                 try:
-                    error.append( np.sqrt(np.abs(covariance[i][i])) )
+                    error.append(np.sqrt(np.abs(covariance[i][i])))
                 except:
-                    error.append( 0.00 )
-            ce = np.array( error )
+                    error.append(0.00)
+            ce = np.array(error)
             
             # this comes from the old code. Likely it was based on
             # empirical experience with the STSDAS task, so we leave
